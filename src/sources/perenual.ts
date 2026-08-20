@@ -50,6 +50,26 @@ export class PerenualClient {
   }
 
   async searchSpecies(query: string, options: PerenualSearchOptions = {}): Promise<unknown> {
+    try {
+      return await this.#searchSpecies(query, options);
+    } catch (error: unknown) {
+      // The species-list collection always exists, so a 404 here means the
+      // request was rejected rather than that nothing was found -- in practice,
+      // an invalid API key. Reporting "no record at that address" would send
+      // someone with a typo in their key looking in entirely the wrong place.
+      if (error instanceof ToolError && error.code === 'not_found') {
+        throw new ToolError('missing_credentials', 'Perenual rejected this request.', {
+          remedy:
+            'This usually means PERENUAL_API_KEY is invalid or expired. Check it against the ' +
+            'key at https://perenual.com/docs/api.',
+          cause: error,
+        });
+      }
+      throw error;
+    }
+  }
+
+  async #searchSpecies(query: string, options: PerenualSearchOptions): Promise<unknown> {
     return getJson({
       deps: this.#deps,
       source: 'perenual',

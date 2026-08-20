@@ -38,6 +38,17 @@ describe('PerenualClient.searchSpecies', () => {
     expect(url.searchParams.get('indoor')).toBe('0');
   });
 
+  it('reads a 404 on the collection as a rejected key, not a missing record', async () => {
+    // Perenual answers an invalid key with 404 rather than 401. The collection
+    // itself always exists, so "not found" here can only mean rejection.
+    const client = clientWith(async () => jsonResponse({}, 404));
+
+    await expect(client.searchSpecies('tomato')).rejects.toMatchObject({
+      code: 'missing_credentials',
+      remedy: expect.stringContaining('PERENUAL_API_KEY'),
+    });
+  });
+
   it('omits filters that were not supplied', async () => {
     const fetchFn = vi.fn(async (_url: string) => jsonResponse({ data: [] }));
     await clientWith(fetchFn).searchSpecies('kale');
