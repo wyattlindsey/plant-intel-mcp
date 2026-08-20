@@ -13,6 +13,7 @@ export interface HarnessOptions {
   env?: Record<string, string | undefined>;
   fetch?: FetchLike;
   cache?: Cache;
+  now?: () => Date;
 }
 
 export interface Harness {
@@ -32,6 +33,7 @@ export async function startHarness(options: HarnessOptions = {}): Promise<Harnes
   const services = createServices(config, {
     cache: options.cache ?? new NullCache(),
     ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
+    ...(options.now === undefined ? {} : { now: options.now }),
   });
 
   const server = createServer(services);

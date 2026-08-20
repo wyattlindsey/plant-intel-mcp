@@ -3,6 +3,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Services } from './services.js';
 import { createServices } from './services.js';
 import { registerPlantDetails } from './tools/plant-details.js';
+import { registerPlantingWindow } from './tools/planting-window.js';
 import { registerSearchPlants } from './tools/search-plants.js';
 
 /**
@@ -24,6 +25,7 @@ export function createServer(services: Services = createServices()): McpServer {
 
   registerSearchPlants(server, services);
   registerPlantDetails(server, services);
+  registerPlantingWindow(server, services);
 
   return server;
 }

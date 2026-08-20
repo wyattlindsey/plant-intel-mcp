@@ -4,19 +4,25 @@ import { JsonFileCache } from './cache/json-file-cache.js';
 import type { Config } from './config.js';
 import { loadConfig } from './config.js';
 import type { FetchLike } from './sources/http.js';
+import { OpenMeteoClient } from './sources/open-meteo.js';
 import { PERENUAL_FREE_DAILY_LIMIT, PerenualClient } from './sources/perenual.js';
 import { DailyQuota } from './sources/quota.js';
 
 export interface Services {
   config: Config;
   cache: Cache;
-  /** Null when PERENUAL_API_KEY is absent; the tools needing it stay unregistered. */
+  /** Null when PERENUAL_API_KEY is absent; calls then answer with how to set it. */
   perenual: PerenualClient | null;
+  /** Always available: Open-Meteo needs no credential. */
+  openMeteo: OpenMeteoClient;
+  /** Injected so the frost window is reproducible in tests. */
+  now: () => Date;
 }
 
 export interface ServiceOverrides {
   fetch?: FetchLike;
   cache?: Cache;
+  now?: () => Date;
 }
 
 /**
@@ -47,5 +53,11 @@ export function createServices(
           }),
         });
 
-  return { config, cache, perenual };
+  return {
+    config,
+    cache,
+    perenual,
+    openMeteo: new OpenMeteoClient({ fetch: fetchFn, cache }),
+    now: overrides.now ?? (() => new Date()),
+  };
 }
