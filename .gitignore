@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.log
+
+# Never commit credentials
+.env
+.env.*
+!.env.example
+
+# Local cache written by the server at runtime
+.cache/

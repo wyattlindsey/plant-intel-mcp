@@ -1,0 +1,45 @@
+{
+  "name": "plant-intel-mcp",
+  "version": "0.1.0",
+  "description": "MCP server giving agents structured plant data for garden planning: species care profiles, mechanism-derived companion checks, and frost-date planting windows.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "gardening",
+    "plants",
+    "horticulture",
+    "companion-planting"
+  ],
+  "license": "MIT",
+  "author": "Wyatt Lindsey",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "plant-intel-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "test:live": "PLANT_INTEL_LIVE=1 vitest run test/live"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.11"
+  }
+}
