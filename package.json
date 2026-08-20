@@ -16,6 +16,15 @@
   "engines": {
     "node": ">=20"
   },
+  "main": "./dist/lib.js",
+  "types": "./dist/lib.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/lib.d.ts",
+      "default": "./dist/lib.js"
+    },
+    "./package.json": "./package.json"
+  },
   "bin": {
     "plant-intel-mcp": "dist/index.js"
   },
