@@ -3,6 +3,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Services } from './services.js';
 import { createServices } from './services.js';
 import { registerCompanionCheck } from './tools/companion-check.js';
+import { registerIdentifyPlant } from './tools/identify-plant.js';
 import { registerPlantDetails } from './tools/plant-details.js';
 import { registerPlantingWindow } from './tools/planting-window.js';
 import { registerSearchPlants } from './tools/search-plants.js';
@@ -28,6 +29,13 @@ export function createServer(services: Services = createServices()): McpServer {
   registerPlantDetails(server, services);
   registerPlantingWindow(server, services);
   registerCompanionCheck(server, services);
+
+  // Genuinely unavailable rather than misconfigured: Perenual gates this
+  // endpoint behind a beta waitlist, so advertising it by default would offer
+  // a capability almost every deployment lacks.
+  if (services.config.identifyBeta) {
+    registerIdentifyPlant(server, services);
+  }
 
   return server;
 }
