@@ -81,15 +81,24 @@ describe('DailyQuota', () => {
     await expect(paid.consume()).resolves.toBeUndefined();
   });
 
-  it('cannot track a budget when caching is disabled, and says so', async () => {
+  it('still guards the budget in memory when caching is disabled', async () => {
     const clock = { value: new Date('2026-08-20T10:00:00Z') };
     const quota = quotaAt(clock, new NullCache(), 1);
 
     await quota.consume();
 
-    // No store means no counter; the guard degrades to permissive rather than
-    // blocking every call after the first.
-    await expect(quota.consume()).resolves.toBeUndefined();
-    expect(quota.tracked).toBe(false);
+    // The cache is not retaining the counter, but the in-memory ledger still
+    // holds the line for this process.
+    await expect(quota.consume()).rejects.toMatchObject({ code: 'quota_exhausted' });
+    expect(quota.persisted).toBe(false);
+  });
+
+  it('reports the counter as persisted when the cache retains it', async () => {
+    const clock = { value: new Date('2026-08-20T10:00:00Z') };
+    const quota = quotaAt(clock, new MemoryCache(), 2);
+
+    await quota.consume();
+
+    expect(quota.persisted).toBe(true);
   });
 });

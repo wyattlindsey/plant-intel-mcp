@@ -34,9 +34,11 @@ function hoursUntilReset(at: Date): string {
  * Counts outbound requests against a per-UTC-day budget so the server stops
  * before an upstream free tier starts rejecting it.
  *
- * The counter lives in the cache. With caching disabled there is nowhere to
- * keep it, so the guard degrades to permissive rather than blocking every call
- * after the first -- `tracked` reports which mode is in effect.
+ * The counter is kept in two places: the cache, so the budget survives a
+ * restart, and memory, so it still holds when caching is disabled. Whichever
+ * count is higher wins. `persisted` reports whether the cache is retaining it;
+ * when it is not, the budget resets with the process rather than silently
+ * ceasing to guard anything.
  */
 export class DailyQuota {
   readonly #cache: Cache;
@@ -44,7 +46,8 @@ export class DailyQuota {
   readonly #label: string;
   readonly #scope: string;
   readonly #now: () => Date;
-  #tracked = true;
+  #memory: Ledger | null = null;
+  #persisted = true;
 
   constructor(options: DailyQuotaOptions) {
     this.#cache = options.cache;
@@ -54,9 +57,9 @@ export class DailyQuota {
     this.#now = options.now ?? (() => new Date());
   }
 
-  /** False once a write has proven the counter is not being retained. */
-  get tracked(): boolean {
-    return this.#tracked;
+  /** False once a write has proven the cache is not retaining the counter. */
+  get persisted(): boolean {
+    return this.#persisted;
   }
 
   async remaining(): Promise<number> {
@@ -82,10 +85,11 @@ export class DailyQuota {
     }
 
     const next: Ledger = { date: utcDate(at), count: ledger.count + 1 };
+    this.#memory = next;
     await this.#cache.set(this.#key(at), next, LEDGER_TTL_MS);
 
     if ((await this.#cache.get<Ledger>(this.#key(at))) === undefined) {
-      this.#tracked = false;
+      this.#persisted = false;
     }
   }
 
@@ -94,8 +98,13 @@ export class DailyQuota {
   }
 
   async #read(): Promise<Ledger> {
-    const at = this.#now();
-    const stored = await this.#cache.get<Ledger>(this.#key(at));
-    return stored?.date === utcDate(at) ? stored : { date: utcDate(at), count: 0 };
+    const today = utcDate(this.#now());
+    const stored = await this.#cache.get<Ledger>(this.#key(this.#now()));
+
+    const counts = [stored, this.#memory]
+      .filter((ledger): ledger is Ledger => ledger?.date === today)
+      .map((ledger) => ledger.count);
+
+    return { date: today, count: counts.length === 0 ? 0 : Math.max(...counts) };
   }
 }
