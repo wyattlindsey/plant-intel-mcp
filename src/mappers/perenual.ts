@@ -209,6 +209,34 @@ export function toSearchResults(raw: unknown, query: string): SearchResults {
   };
 }
 
+/**
+ * Every field this mapper reads from a species-details payload. Exported so
+ * the live smoke test can assert the real API still supplies them -- fixtures
+ * built from documentation drift silently otherwise.
+ */
+export const PERENUAL_DETAIL_FIELDS = [
+  'id',
+  'common_name',
+  'scientific_name',
+  'other_name',
+  'family',
+  'cycle',
+  'sunlight',
+  'watering',
+  'hardiness',
+  'dimensions',
+  'edible_fruit',
+  'edible_leaf',
+  'poisonous_to_humans',
+  'poisonous_to_pets',
+  'pest_susceptibility',
+  'care_level',
+  'growth_rate',
+  'drought_tolerant',
+  'indoor',
+  'description',
+] as const;
+
 /** Fields whose absence is worth naming, because a caller may plan around them. */
 const NOTABLE_FIELDS = [
   'pest_susceptibility',

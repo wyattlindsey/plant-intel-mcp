@@ -9,3 +9,6 @@ dist/
 
 # Local cache written by the server at runtime
 .cache/
+
+# Live smoke test cache (npm run test:live)
+.cache-live/
