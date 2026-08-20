@@ -1,6 +1,6 @@
 {
   "name": "plant-intel-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP server giving agents structured plant data for garden planning: species care profiles, mechanism-derived companion checks, and frost-date planting windows.",
   "keywords": [
     "mcp",
@@ -34,6 +34,7 @@
     "LICENSE"
   ],
   "scripts": {
+    "prepare": "npm run build",
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
